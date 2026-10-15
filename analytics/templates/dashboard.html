@@ -1,0 +1,919 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Model Supply Chain Intelligence Platform</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2TgFQX4JvRQY+1yVb2L/M2zbhxvY5Y+q5j3Z3bM=" crossorigin="" />
+    <style>
+        body { 
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 36%),
+                radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 32%),
+                linear-gradient(135deg, #f8fbff 0%, #eef4ff 48%, #f9fbff 100%); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            color: #0f172a; 
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            color: #0f172a;
+        }
+
+        /* PREMIUM GLASSMORPHIC TRANSPARENT SIDEBAR */
+        .sidebar { 
+            background: rgba(255, 255, 255, 0.22); 
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            min-height: 100vh; 
+            box-shadow: 4px 0 28px rgba(15, 23, 42, 0.08); 
+            color: #0f172a; 
+            padding: 25px; 
+            border-right: 1px solid rgba(255, 255, 255, 0.55);
+        }
+        
+        .card { 
+            border: 1px solid rgba(148, 163, 184, 0.22); 
+            border-radius: 12px; 
+            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.10); 
+            background: rgba(255, 255, 255, 0.72); 
+            backdrop-filter: blur(10px);
+            margin-bottom: 24px; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            color: #0f172a;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+        }
+        
+        .form-label { font-weight: 600; color: #475569; font-size: 0.9rem; }
+        .form-select, .form-control { background-color: rgba(255,255,255,0.82); border: 1px solid rgba(148,163,184,0.35); color: #0f172a; border-radius: 10px; padding: 10px; }
+        .form-select:focus, .form-control:focus { background-color: #ffffff; color: #0f172a; border-color: #38bdf8; box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.16); }
+        
+        .table-responsive { border-radius: 14px; overflow: hidden; border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 10px 25px rgba(15,23,42,0.08); }
+        .sticky-thead th { position: sticky; top: 0; background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff; z-index: 10; border-bottom: 2px solid rgba(255,255,255,0.1); }
+
+        .soft-panel {
+            background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(248,250,252,0.72));
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 18px;
+            box-shadow: 0 18px 42px rgba(15,23,42,0.08);
+        }
+
+        .visual-shell {
+            background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(99,102,241,0.10));
+            border: 1px solid rgba(99,102,241,0.15);
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .sidebar .form-label,
+        .sidebar .text-muted,
+        .sidebar h3,
+        .sidebar h6 {
+            color: #0f172a !important;
+        }
+
+        .sidebar .btn-outline-light {
+            color: #0f172a;
+            border-color: rgba(15,23,42,0.18);
+            background: rgba(255,255,255,0.35);
+        }
+
+        .sidebar .btn-outline-light:hover {
+            background: rgba(255,255,255,0.55);
+            color: #0f172a;
+        }
+
+        .sidebar .bg-info.bg-opacity-5,
+        .sidebar .bg-warning.bg-opacity-5 {
+            background-color: rgba(255,255,255,0.24) !important;
+            border-color: rgba(148,163,184,0.22) !important;
+        }
+        
+        /* STATE STATUS LIGHTS */
+        .status-pill { font-size: 0.75rem; padding: 4px 10px; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; }
+        .pulse-dot { width: 8px; height: 8px; background-color: #4ade80; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 rgba(74, 222, 128, 0.4); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); } 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); } }
+
+        .dashboard-title {
+            color: #0f172a;
+        }
+
+        .dashboard-subtitle {
+            color: #475569;
+        }
+
+        .mode-badge {
+            background: linear-gradient(135deg, rgba(14,165,233,0.16), rgba(99,102,241,0.18));
+            color: #0f172a;
+            border: 1px solid rgba(99,102,241,0.16) !important;
+        }
+
+        /* INTERACTIVE OBJECTIVE BUTTONS */
+        .objective-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(248,250,252,0.4));
+            border: 2px solid rgba(14,165,233,0.3) !important;
+            color: #0f172a !important;
+            font-weight: 600;
+            padding: 14px 18px !important;
+            font-size: 1.05rem;
+            border-radius: 10px;
+            transition: all 0.35s cubic-bezier(0.23, 1, 0.320, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(14,165,233,0.12);
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100% !important;
+        }
+
+        .objective-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .objective-btn:hover {
+            background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(56,189,248,0.12));
+            border-color: rgba(14,165,233,0.6) !important;
+            box-shadow: 0 8px 25px rgba(14,165,233,0.25);
+            transform: translateY(-3px);
+        }
+
+        .objective-btn:hover::before {
+            left: 100%;
+        }
+
+        .objective-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+            border-color: #0ea5e9 !important;
+            color: #ffffff !important;
+            box-shadow: 0 10px 30px rgba(14,165,233,0.4);
+        }
+
+        .objective-btn.active:hover {
+            background: linear-gradient(135deg, #0d9fd4, #059bb8);
+            box-shadow: 0 12px 35px rgba(14,165,233,0.5);
+        }
+
+        .objective-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .objective-btn:hover i {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        /* Ensure objective form buttons are full width */
+        .objective-btn-form {
+            width: 100%;
+        }
+
+        /* CLASSIFICATION METRICS CARDS - CUBE STYLE */
+        .metric-card {
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background-clip: padding-box;
+            backdrop-filter: blur(12px);
+            transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.09);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+            border-radius: 14px;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
+            backdrop-filter: blur(16px);
+        }
+
+        .metric-card h2 {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        /* Minimalist light mode - fully white, borderless, black text */
+        .warehouse-table {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+        .warehouse-table thead.sticky-thead th,
+        .warehouse-table thead th {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-weight: 700 !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
+        }
+        .warehouse-table tbody tr {
+            background: transparent !important;
+            border: none !important;
+        }
+        .warehouse-table tbody tr td,
+        .warehouse-table td,
+        .warehouse-table th {
+            background: transparent !important;
+            border: none !important;
+            color: #000000 !important;
+        }
+        /* Force all utility text classes inside the warehouse table to black */
+        .warehouse-table .text-muted,
+        .warehouse-table .text-info,
+        .warehouse-table .text-warning,
+        .warehouse-table .text-success,
+        .warehouse-table .text-primary,
+        .warehouse-table .text-dark,
+        .warehouse-table .fw-bold,
+        .warehouse-table .font-monospace {
+            color: #000000 !important;
+            opacity: 1 !important;
+        }
+        /* Make badges and status pills plain/transparent with black text */
+        .warehouse-table .badge,
+        .warehouse-table .badge.bg-success,
+        .warehouse-table .badge.bg-danger,
+        .warehouse-table .badge.bg-primary,
+        .warehouse-table .badge.bg-light {
+            background: transparent !important;
+            color: #000000 !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        /* Remove hover row background and dividers */
+        .warehouse-table.table-hover tbody tr:hover {
+            background: transparent !important;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        
+        <div class="col-md-3 sidebar">
+            
+            <div class="mb-4">
+                <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm w-100">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Back to Home
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center mb-4 border-bottom border-secondary border-opacity-20 pb-3">
+                <i class="fa-solid fa-layer-group text-info fs-3 me-3"></i>
+                <h3 class="h4 mb-0 fw-bold">System Matrix</h3>
+            </div>
+            
+            <form method="POST" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="objective" value="{{ selected_objective }}">
+                <div class="mb-4">
+                    <label class="form-label mb-2">
+                        <i class="fa-solid fa-file-csv me-2 text-info"></i>Step 0: Upload Data (CSV)
+                    </label>
+                    <div class="input-group input-group-sm mb-2">
+                        <input type="file" name="dataset" class="form-control form-control-sm" accept=".csv" required>
+                        <button type="submit" name="upload_csv" value="1" class="btn btn-info text-white fw-bold px-3">Upload</button>
+                    </div>
+                    
+                    {% if file_status == "SUCCESS" %}
+                        <span class="status-pill bg-success text-white"><i class="fa-solid fa-circle-check me-1"></i> Loaded Successfully</span>
+                    {% else %}
+                        <span class="status-pill bg-secondary text-white-50"><i class="fa-solid fa-circle-notch fa-spin me-1"></i> Standing By for Stream</span>
+                    {% endif %}
+                </div>
+            </form>
+
+            <details class="mb-4 border border-info rounded p-3 bg-info bg-opacity-5">
+                <summary class="d-flex justify-content-between align-items-center mb-0 text-info fw-bold" style="cursor: pointer; list-style: none;">
+                    <span>
+                        <i class="fa-solid fa-truck-ramp-box me-2"></i>Quick Real-Time Entry
+                    </span>
+                    <a href="{% url 'add_realtime_data' %}" class="small text-info text-decoration-none me-2" onclick="event.stopPropagation();">Full form</a>
+                </summary>
+
+                <div class="mt-3 pt-2 border-top border-info border-opacity-10">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="objective" value="add_realtime_data">
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Asset ID</label>
+                            {{ realtime_form.asset_id }}
+                            {% if realtime_form.asset_id.errors %}
+                                <div class="small text-warning mt-1">{{ realtime_form.asset_id.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Operational Region</label>
+                            {{ realtime_form.operational_region }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Logistics Status</label>
+                            {{ realtime_form.logistics_status }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">IoT Temperature (°C)</label>
+                            {{ realtime_form.iot_temperature }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Traffic Volume Scale</label>
+                            {{ realtime_form.traffic_volume_scale }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Waiting Latency (Hours)</label>
+                            {{ realtime_form.waiting_latency_hours }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1">NLP Classified Genre</label>
+                            {{ realtime_form.nlp_classified_genre }}
+                        </div>
+
+                        <button type="submit" name="submit_realtime_form" value="1" class="btn btn-success btn-sm w-100 fw-bold py-2">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Save Record
+                        </button>
+                    </form>
+                </div>
+            </details>
+
+                <div class="mb-4 border border-warning rounded p-3 bg-warning bg-opacity-5">
+                    <label class="form-label mb-2 text-warning font-monospace fw-bold">
+                        <i class="fa-solid fa-bolt me-2"></i>Automated AI Pipeline
+                    </label>
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="objective" value="{{ selected_objective }}">
+                        <button type="submit" name="run_pipeline" value="1" class="btn btn-warning btn-sm w-100 fw-bold border-dark shadow-sm py-2">
+                            <i class="fa-solid fa-gears me-2"></i>Run Full Refresh Flow
+                        </button>
+                    </form>
+                    <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <small class="text-muted" style="font-size: 0.75rem;">Pipeline Status:</small>
+                        {% if pipeline_status == "COMPLETED" %}
+                            <span class="badge bg-success text-white d-inline-flex align-items-center gap-1"><span class="pulse-dot"></span> Process Completed</span>
+                        {% else %}
+                            <span class="badge bg-white text-dark border border-secondary border-opacity-20">Inactive Node</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-grid gap-2">
+                        <form method="POST" action="" class="mb-0 objective-btn-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="objective" value="time_series">
+                            <button type="submit" class="objective-btn {% if selected_objective == 'time_series' %}active{% endif %}">
+                                <i class="fa-solid fa-chart-line me-2"></i>📊 Time Series
+                            </button>
+                        </form>
+                        <form method="POST" action="" class="mb-0 objective-btn-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="objective" value="clustering">
+                            <button type="submit" class="objective-btn {% if selected_objective == 'clustering' %}active{% endif %}">
+                                <i class="fa-solid fa-circle-nodes me-2"></i>🎯 Clustering
+                            </button>
+                        </form>
+                        <form method="POST" action="" class="mb-0 objective-btn-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="objective" value="classification">
+                            <button type="submit" class="objective-btn {% if selected_objective == 'classification' %}active{% endif %}">
+                                <i class="fa-solid fa-brain me-2"></i>🤖 Classification
+                            </button>
+                        </form>
+                        
+                        <form method="POST" action="" class="mb-0 objective-btn-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="objective" value="objectives">
+                            <button type="submit" class="objective-btn {% if selected_objective == 'objectives' %}active{% endif %}">
+                                <i class="fa-solid fa-clipboard-check me-2"></i>📋 Objectives & Results
+                            </button>
+                        </form>
+
+                        <form method="POST" action="" class="mb-0 objective-btn-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="objective" value="add_realtime_data">
+                            <button type="submit" class="objective-btn {% if selected_objective == 'add_realtime_data' %}active{% endif %}">
+                                <i class="fa-solid fa-database me-2"></i>📥 Add Real-Time
+                            </button>
+                        </form>
+                        <form method="POST" action="" class="mb-0 objective-btn-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="objective" value="realtime_data">
+                            <button type="submit" class="objective-btn {% if selected_objective == 'realtime_data' %}active{% endif %}">
+                                <i class="fa-solid fa-satellite me-2"></i>🛰️ Fleet Monitor
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <hr class="border-secondary my-4">
+                
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fa-solid fa-sliders text-secondary me-2"></i>
+                    <h6 class="text-secondary uppercase mb-0 tracking-wider small fw-bold">x Model Hyperparameters</h6>
+                </div>
+
+                {% if selected_objective == 'clustering' %}
+                <div class="mb-4">
+                    <label class="form-label d-flex justify-content-between mb-2">
+                        <span>Target Clusters (K Groups)</span>
+                        <span class="text-info font-monospace fw-bold">{{ k_clusters }}</span>
+                    </label>
+                    <input type="range" name="k_clusters" min="2" max="6" value="{{ k_clusters }}" class="form-range" onchange="this.form.submit()">
+                </div>
+                {% endif %}
+
+                {% if selected_objective == 'realtime_data' %}
+                <div class="mb-4">
+                    <label class="form-label d-flex justify-content-between mb-2">
+                        <span>Display Records</span>
+                        <span id="display-records-value" class="text-info font-monospace fw-bold">{{ display_records }}</span>
+                    </label>
+                    <input id="display-records-slider" type="range" name="display_records" form="metrics-filter-form" min="10" max="100" value="{{ display_records }}" step="10" class="form-range">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label mb-2">
+                        <i class="fa-solid fa-chart-pie me-2 text-info"></i>Metrics Filter
+                    </label>
+                    <select name="metrics_filter" form="metrics-filter-form" class="form-select">
+                        <option value="latency_performance" {% if metrics_filter == 'latency_performance' %}selected{% endif %}>📊 Latency Performance</option>
+                        <option value="fleet_status" {% if metrics_filter == 'fleet_status' %}selected{% endif %}>🔄 Fleet Status</option>
+                        <option value="temperature_analysis" {% if metrics_filter == 'temperature_analysis' %}selected{% endif %}>🌡️ Temperature Analysis</option>
+                        <option value="regional_breakdown" {% if metrics_filter == 'regional_breakdown' %}selected{% endif %}>🗺️ Regional Breakdown</option>
+                    </select>
+                </div>
+                {% endif %}
+
+                {% if selected_objective == 'classification' %}
+                <div class="alert alert-info py-2 px-3 mt-3 bg-info bg-opacity-10 border-0 text-info">
+                    <small><i class="fa-solid fa-circle-info me-2"></i>Classification module uses Random Forest algorithm to predict Delivery Status.</small>
+                </div>
+                {% endif %}
+
+            <form id="metrics-filter-form" method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="objective" value="realtime_data">
+                <button type="submit" class="btn btn-info w-100 mt-3 text-white fw-bold py-2 shadow-sm">
+                    <i class="fa-solid fa-rotate me-2"></i>Update Calculations
+                </button>
+            </form>
+
+            <hr class="border-secondary my-4">
+            
+            <form method="POST" action="" class="mb-0">
+                {% csrf_token %}
+                <input type="hidden" name="objective" value="operations_env">
+                <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold border-dark shadow-sm py-2">
+                    <i class="fa-solid fa-industry me-2"></i>View Operations Environment
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-9 p-4 main-content">
+            
+            <div class="d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-30 pb-3 mb-4">
+                <div>
+                    <h1 class="h2 fw-bold dashboard-title mb-1">Intelligent Supply Chain Multi-Model Dashboard</h1>
+                    <p class="dashboard-subtitle mb-0 small">Hybrid Persistence Architecture: Relational PostgreSQL Engine & Non-Relational MongoDB Contextual Streams</p>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success border-0 bg-success bg-opacity-10 text-white alert-dismissible fade show shadow-sm d-flex align-items-center p-3 mb-4 rounded-3" role="alert">
+                    <i class="fa-solid fa-circle-check fs-4 me-3 text-success"></i>
+                    <div><strong>System Notification:</strong> {{ message }}</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="card p-4">
+                <h5 class="card-title fw-bold border-bottom border-secondary border-opacity-20 pb-2 mb-3 d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-chart-line me-2 text-info"></i>Reactive Visualization Matrix</span>
+                    <span class="badge mode-badge font-monospace fs-6 px-2 py-1">MODE: {{ selected_objective|upper }}</span>
+                </h5>
+
+                {% if selected_objective == 'add_realtime_data' %}
+                    <div class="w-100 p-2">
+                        <div class="soft-panel p-4">
+                            <h5 class="card-title fw-bold text-info mb-3">
+                                <i class="fa-solid fa-truck-ramp-box me-2"></i>Quick Real-Time Entry Enabled
+                            </h5>
+                            <p class="dashboard-subtitle mb-3">
+                                Use the left sidebar form to add real-time asset data directly into the registry.
+                            </p>
+                            <div class="alert alert-info bg-info bg-opacity-10 border-0 text-info mb-0">
+                                The full add-record page remains available if you need the larger layout.
+                            </div>
+                        </div>
+                    </div>
+                    
+                {% elif selected_objective == 'realtime_data' %}
+                    <div class="w-100 p-2 filter-data-shell">
+                        <div id="fleet-map" style="width: 100%; display: block; height: 450px; background: #fff; margin-bottom: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);"></div>
+                        {% if chart_html %}
+                            <div class="visual-shell w-100 mb-4">
+                                {{ chart_html|safe }}
+                            </div>
+                        {% endif %}
+                        {% include '_realtime_partial.html' %}
+                    </div>
+                    
+                {% elif selected_objective == 'objectives' %}
+                    <div class="w-100 p-2">
+                        <div class="soft-panel p-4 mb-3">
+                            <h5 class="card-title fw-bold text-info mb-2">
+                                <i class="fa-solid fa-clipboard-check me-2"></i>Project Objectives & Results
+                            </h5>
+                            <p class="dashboard-subtitle mb-0">Consolidated objectives and analytical answers grouped by pipeline phase. Click a card to expand details.</p>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="card p-3 h-100 border-0 soft-panel">
+                                    <div class="text-muted small mb-1">Verified Milestones</div>
+                                    <div class="h3 fw-bold text-info mb-0">{{ verified_milestones }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card p-3 h-100 border-0 soft-panel">
+                                    <div class="text-muted small mb-1">Total Ingested Rows</div>
+                                    <div class="h3 fw-bold text-info mb-0">{{ total_ingested_rows }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card p-3 h-100 border-0 soft-panel">
+                                    <div class="text-muted small mb-1">Max Mining Confidence</div>
+                                    <div class="h3 fw-bold text-info mb-0">{{ max_mining_confidence }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card p-3 h-100 border-0 soft-panel">
+                                    <div class="text-muted small mb-1">Balanced ML Samples</div>
+                                    <div class="h3 fw-bold text-info mb-0">{{ balanced_ml_samples }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion" id="objectivesAccordion">
+                            {% for phase in objectives_phases %}
+                            <div class="accordion-item mb-3">
+                                <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <strong>{{ phase.phase }}</strong>
+                                            </div>
+                                            <div class="text-end small">
+                                                <span class="badge bg-primary">{{ phase.items|length }} objectives</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#objectivesAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            {% for item in phase.items %}
+                                            <div class="col-12">
+                                                <div class="card p-3">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-bold">{{ item.id }}. {{ item.objective }}</h6>
+                                                            <p class="mb-2 text-muted small">Answer:</p>
+                                                            <p class="mb-0">{{ item.answer }}</p>
+                                                        </div>
+                                                        <div class="text-end ms-3">
+                                                            <span class="badge bg-info text-dark">Phase: {{ forloop.parentloop.counter }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if warehouse_data %}
+                        <div class="soft-panel p-4 mt-4">
+                            <div class="d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-20 pb-2 mb-3">
+                                <h5 class="card-title fw-bold text-info mb-0">
+                                    <i class="fa-solid fa-database me-2"></i>Latest Stored Data Snapshot
+                                </h5>
+                                <span class="badge bg-info text-dark">{{ warehouse_data|length }} rows loaded</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0 small">
+                                    <thead class="sticky-thead">
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Asset ID</th>
+                                            <th>Region</th>
+                                            <th>Status</th>
+                                            <th>Latency (Hrs)</th>
+                                            <th>Sentiment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in warehouse_data|slice:":8" %}
+                                        <tr>
+                                            <td class="text-muted font-monospace">{{ row.Timestamp }}</td>
+                                            <td class="fw-bold text-info">{{ row.Asset_ID }}</td>
+                                            <td>{{ row.Region }}</td>
+                                            <td>{{ row.Shipment_Status }}</td>
+                                            <td class="font-monospace">{{ row.Waiting_Time_Hours }}</td>
+                                            <td><span class="badge bg-light text-dark border">{{ row.Document_Genre }}</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    {% if chart_html %}
+                        <div class="visual-shell w-100">
+                            {{ chart_html|safe }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center my-4 py-4 bg-warning bg-opacity-10 border-0 text-warning">
+                            <i class="fa-solid fa-triangle-exclamation display-6 d-block mb-2 text-warning"></i>
+                            No analytical visualization engine loaded for this menu objective parameter matrix.
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            {% if selected_objective == 'classification' %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="h6 fw-bold text-dark mb-3">
+                        <i class="fa-solid fa-chart-line me-2 text-primary"></i>Performance Metrics
+                    </h5>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="metric-card" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%); border-left: 4px solid #22c55e; min-height: 140px;">
+                        <div class="d-flex flex-column justify-content-between h-100 p-3">
+                            <div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fa-solid fa-target me-1" style="color: #22c55e;"></i>Accuracy
+                                </p>
+                            </div>
+                            <div>
+                                <h2 class="display-5 fw-bold text-success mb-0" style="line-height: 1;">
+                                    {{ classification_metrics.accuracy }}
+                                </h2>
+                                <p class="text-muted small mt-1 mb-0">Overall prediction rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="metric-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%); border-left: 4px solid #3b82f6; min-height: 140px;">
+                        <div class="d-flex flex-column justify-content-between h-100 p-3">
+                            <div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fa-solid fa-crosshairs me-1" style="color: #3b82f6;"></i>Precision
+                                </p>
+                            </div>
+                            <div>
+                                <h2 class="display-5 fw-bold text-primary mb-0" style="line-height: 1;">
+                                    {{ classification_metrics.precision }}
+                                </h2>
+                                <p class="text-muted small mt-1 mb-0">True positive rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="metric-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%); border-left: 4px solid #8b5cf6; min-height: 140px;">
+                        <div class="d-flex flex-column justify-content-between h-100 p-3">
+                            <div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fa-solid fa-magnifying-glass me-1" style="color: #8b5cf6;"></i>Recall
+                                </p>
+                            </div>
+                            <div>
+                                <h2 class="display-5 fw-bold mb-0" style="color: #8b5cf6; line-height: 1;">
+                                    {{ classification_metrics.recall }}
+                                </h2>
+                                <p class="text-muted small mt-1 mb-0">Coverage rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="metric-card" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(236, 72, 153, 0.05) 100%); border-left: 4px solid #ec4899; min-height: 140px;">
+                        <div class="d-flex flex-column justify-content-between h-100 p-3">
+                            <div>
+                                <p class="text-muted small mb-2">
+                                    <i class="fa-solid fa-star me-1" style="color: #ec4899;"></i>F1 Score
+                                </p>
+                            </div>
+                            <div>
+                                <h2 class="display-5 fw-bold mb-0" style="color: #ec4899; line-height: 1;">
+                                    {{ classification_metrics.f1_score }}
+                                </h2>
+                                <p class="text-muted small mt-1 mb-0">Harmonic mean</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card p-3 border-0" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(14, 165, 233, 0.02) 100%);">
+                        <p class="text-muted small mb-2">
+                            <i class="fa-solid fa-database me-2 text-info"></i>Data Source
+                        </p>
+                        <p class="fw-bold text-dark mb-0">{{ classification_metrics.data_source }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card p-3 border-0" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(14, 165, 233, 0.02) 100%);">
+                        <p class="text-muted small mb-2">
+                            <i class="fa-solid fa-hashtag me-2 text-info"></i>Total Samples Tested
+                        </p>
+                        <p class="fw-bold text-dark mb-0">{{ classification_metrics.total_samples }} records</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card p-4 border-start border-info border-4">
+                        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-20 pb-2 mb-3">
+                            <h5 class="card-title h6 fw-bold text-info mb-0">
+                                <i class="fa-solid fa-border-all me-2"></i>Confusion Matrix Heatmap
+                            </h5>
+                        </div>
+                        {% if confusion_matrix_html %}
+                            <div class="w-100 bg-light rounded p-2" style="min-height: 300px;">
+                                {{ confusion_matrix_html|safe }}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center mt-4">
+                                <i class="fa-solid fa-circle-info me-2"></i>Confusion matrix will display after running classification with CSV upload or pipeline.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if selected_objective != 'objectives' %}
+            <div class="card p-4">
+                <div class="mb-3 border-bottom border-secondary border-opacity-20 pb-2">
+                    <h4 class="h5 fw-bold text-dark mb-1">
+                        <i class="fa-solid fa-database me-2 text-info"></i>Integrated Analytical Data Warehouse Registry
+                    </h4>
+                    <p class="text-muted small mb-0">Unified table registry demonstrating tabular schemas combined via Python executing SQL-to-NoSQL joins on the <code>Asset_ID</code> core relational token key.</p>
+                </div>
+                
+                <div class="table-responsive" style="max-height: 320px;">
+                    <table class="table table-sm table-hover text-center align-middle small mb-0 warehouse-table">
+                        <thead class="sticky-thead">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Asset ID (Truck)</th>
+                                <th>Operational Region</th>
+                                <th>Logistics Status</th>
+                                <th>IoT Temperature (°C)</th>
+                                <th>Traffic Volume Scale</th>
+                                <th>Waiting Latency (Hrs)</th>
+                                <th>Driver Sentiment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in warehouse_data %}
+                            <tr>
+                                <td class="text-muted font-monospace">{{ row.Timestamp }}</td>
+                                <td class="fw-bold text-info">{{ row.Asset_ID }}</td>
+                                <td>{{ row.Region }}</td>
+                                <td>
+                                    {% if row.Shipment_Status == 'Shipping on time' or row.Shipment_Status == 'Advance shipping' or row.Shipment_Status == 'Delivered' %}
+                                        <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 rounded-pill px-2 py-1">{{ row.Shipment_Status }}</span>
+                                    {% elif row.Shipment_Status == 'Late delivery' or row.Shipment_Status == 'Delayed' %}
+                                        <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 rounded-pill px-2 py-1">{{ row.Shipment_Status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-primary bg-opacity-20 text-primary border border-primary border-opacity-30 rounded-pill px-2 py-1">{{ row.Shipment_Status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-monospace">{% if row.Temperature == 'N/A' %}N/A{% else %}{{ row.Temperature|floatformat:1 }}°C{% endif %}</td>
+                                <td class="font-monospace">{% if row.Traffic_Volume_Index == 'N/A' %}N/A{% else %}{{ row.Traffic_Volume_Index }}{% endif %}</td>
+                                <td class="font-monospace fw-semibold text-warning">{% if row.Waiting_Time_Hours == 'N/A' %}N/A{% else %}{{ row.Waiting_Time_Hours|floatformat:1 }}{% endif %}</td>
+                                <td><span class="badge bg-light text-dark border px-2 py-1"><i class="fa-solid fa-book-open text-muted me-1"></i>{{ row.Document_Genre }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% include 'chatbot_widget.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // 1. Slider Functionality
+    (function () {
+        const slider = document.getElementById('display-records-slider');
+        const valueLabel = document.getElementById('display-records-value');
+        if (!slider || !valueLabel) return;
+
+        const syncLabel = () => {
+            valueLabel.textContent = slider.value;
+        };
+
+        slider.addEventListener('input', syncLabel);
+        syncLabel();
+    })();
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mapContainer = document.getElementById('fleet-map');
+        if (!mapContainer || typeof L === 'undefined') return;
+
+        const mapMarkers = {{ map_markers_json|safe }};
+        const map = L.map('fleet-map', {
+            scrollWheelZoom: false,
+            zoomControl: true,
+        }).setView([20, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(map);
+
+        const markerGroup = L.featureGroup();
+        mapMarkers.forEach(function (marker) {
+            const circle = L.circleMarker([marker.lat, marker.lng], {
+                radius: 8,
+                color: marker.color,
+                fillColor: marker.color,
+                fillOpacity: 0.8,
+                weight: 1,
+                opacity: 0.9,
+            }).addTo(markerGroup);
+            circle.bindPopup(
+                `<div style="font-size:0.95rem; line-height:1.4;"><strong>Truck ID:</strong> ${marker.asset_id}<br><strong>Region:</strong> ${marker.region}<br><strong>Status:</strong> ${marker.status}</div>`
+            );
+        });
+
+        if (mapMarkers.length > 0) {
+            markerGroup.addTo(map);
+            map.fitBounds(markerGroup.getBounds().pad(0.35));
+        } else {
+            map.invalidateSize();
+        }
+    });
+</script>
+</body>
+</html>

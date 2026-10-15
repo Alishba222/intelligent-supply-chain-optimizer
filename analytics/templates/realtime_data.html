@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Real-Time Asset Data Registry{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-4">🚚 Real-Time Asset Data Registry</h1>
+            <p class="text-muted">Live tracking of supply chain assets with operational metrics</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'add_realtime_data' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Add New Record
+            </a>
+        </div>
+    </div>
+
+    {% include '_realtime_partial.html' %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+<!-- Partial: realtime filter, table, pagination -->
+<!-- This partial is intended to be included inside other pages (no outer container) -->
+
+    <!-- Filter Section -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">📊 Filter Data</h5>
+            <form method="POST" class="row g-3">
+                {% csrf_token %}
+                <input type="hidden" name="objective" value="{{ selected_objective|default:'realtime_data' }}">
+                <div class="col-md-3">
+                    <label class="form-label">Asset ID</label>
+                    <select name="asset_id" class="form-select">
+                        <option value="">All Assets</option>
+                        {% for asset in unique_assets %}
+                            <option value="{{ asset }}" {% if asset == asset_filter %}selected{% endif %}>{{ asset }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Logistics Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        {% for status in unique_status %}
+                            <option value="{{ status }}" {% if status == status_filter %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Region</label>
+                    <select name="region" class="form-select">
+                        <option value="">All Regions</option>
+                        {% for region in unique_regions %}
+                            <option value="{{ region }}" {% if region == region_filter %}selected{% endif %}>{{ region }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Total Records:</strong> {{ total_records }} | 
+                <strong>Showing Page:</strong> {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Data Table -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-borderless mb-0 filter-data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Asset ID</th>
+                        <th>Region</th>
+                        <th>Status</th>
+                        <th>Temp (°C)</th>
+                        <th>Traffic Volume</th>
+                        <th>Wait Time (hrs)</th>
+                        <th>Genre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                        <tr>
+                            <td>
+                                <small class="text-muted">{{ item.timestamp_display|default:'N/A' }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ item.asset_id_display|default:'N/A' }}</strong>
+                            </td>
+                            <td>
+                                {{ item.operational_region_display|default:'N/A' }}
+                            </td>
+                            <td>
+                                {{ item.logistics_status_display|default:'N/A' }}
+                            </td>
+                            <td>
+                                {{ item.iot_temperature_display|default:'N/A' }}
+                            </td>
+                            <td>
+                                {{ item.traffic_volume_scale_display|default:'N/A' }}
+                            </td>
+                            <td>
+                                {{ item.waiting_latency_hours_display|default:'N/A' }}
+                            </td>
+                            <td>
+                                {{ item.nlp_classified_genre_display|default:'-' }}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox"></i> No records found. Adjust filters to view warehouse rows.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if asset_filter %}&asset_id={{ asset_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if region_filter %}&region={{ region_filter }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if asset_filter %}&asset_id={{ asset_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if region_filter %}&region={{ region_filter }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if asset_filter %}&asset_id={{ asset_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if region_filter %}&region={{ region_filter }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if asset_filter %}&asset_id={{ asset_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if region_filter %}&region={{ region_filter }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <style>
+        .filter-data-table thead th {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 0 !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            font-weight: 700;
+        }
+
+        .filter-data-table tbody td {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .filter-data-table tbody tr {
+            background: #ffffff !important;
+        }
+
+        .filter-data-table tbody tr:hover {
+            background: #ffffff !important;
+        }
+    </style>

@@ -1,0 +1,276 @@
+<!-- Floating Chatbot Widget -->
+<style>
+    /* Chatbot Widget Styles */
+    .chat-widget {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+    }
+    
+    .chat-button {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #0f172a;
+        color: white;
+        text-align: center;
+        line-height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+    
+    .chat-button:hover {
+        transform: scale(1.1);
+        background-color: #1e293b;
+    }
+    
+    .chat-popup {
+        display: none;
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 350px;
+        height: 450px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .chat-header {
+        background-color: #0f172a;
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chat-close {
+        cursor: pointer;
+        font-size: 18px;
+    }
+    
+    .chat-body {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background-color: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .chat-message {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        word-wrap: break-word;
+    }
+    
+    .chat-message.bot {
+        background-color: #e2e8f0;
+        color: #0f172a;
+        align-self: flex-start;
+        border-bottom-left-radius: 5px;
+        white-space: pre-wrap;
+    }
+    
+    .chat-message.user {
+        background-color: #38bdf8;
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .chat-footer {
+        padding: 15px;
+        background-color: white;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .chat-input {
+        flex: 1;
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 8px 15px;
+        outline: none;
+    }
+    
+    .chat-input:focus {
+        border-color: #38bdf8;
+    }
+    
+    .chat-send {
+        background-color: #38bdf8;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+    
+    .chat-send:hover {
+        background-color: #0284c7;
+    }
+
+    .typing-indicator {
+        display: none;
+        align-self: flex-start;
+        background-color: #e2e8f0;
+        padding: 10px 15px;
+        border-radius: 15px;
+        border-bottom-left-radius: 5px;
+        color: #64748b;
+        font-style: italic;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="chat-widget">
+    <div class="chat-popup" id="chatPopup">
+        <div class="chat-header">
+            <div><i class="fa-solid fa-robot me-2"></i>Supply Chain AI</div>
+            <div class="chat-close" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message bot">Hello! I am your upgraded Supply Chain AI Assistant. Ask anything in English, Hindi, or Urdu, including greetings, daily questions, math, and supply chain analytics.</div>
+            <div id="metricsPanel" style="font-size:0.85rem; margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
+                <div style="background:#f1f5f9;padding:6px 8px;border-radius:8px;min-width:90px;">Accuracy: <strong id="m_accuracy">—</strong></div>
+                <div style="background:#f1f5f9;padding:6px 8px;border-radius:8px;min-width:90px;">Precision: <strong id="m_precision">—</strong></div>
+                <div style="background:#f1f5f9;padding:6px 8px;border-radius:8px;min-width:90px;">Recall: <strong id="m_recall">—</strong></div>
+                <div style="background:#f1f5f9;padding:6px 8px;border-radius:8px;min-width:90px;">F1: <strong id="m_f1">—</strong></div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">AI is thinking...</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask anything... (English/Hindi/Urdu)" onkeypress="handleKeyPress(event)">
+            <button class="chat-send" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <div class="chat-button" onclick="toggleChat()">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+</div>
+
+<script>
+    function toggleChat() {
+        const popup = document.getElementById('chatPopup');
+        if (popup.style.display === 'flex') {
+            popup.style.display = 'none';
+        } else {
+            popup.style.display = 'flex';
+            document.getElementById('chatInput').focus();
+        }
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    function addMessage(text, sender) {
+        const chatBody = document.getElementById('chatBody');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${sender}`;
+        msgDiv.textContent = text;
+        
+        // Insert before typing indicator
+        chatBody.insertBefore(msgDiv, typingIndicator);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        
+        if (!text) return;
+        
+        // Add user message
+        addMessage(text, 'user');
+        input.value = '';
+        
+        // Show typing indicator
+        const typingIndicator = document.getElementById('typingIndicator');
+        const chatBody = document.getElementById('chatBody');
+        typingIndicator.style.display = 'block';
+        chatBody.scrollTop = chatBody.scrollHeight;
+        
+        try {
+            // Include CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+            const formData = new URLSearchParams();
+            formData.append('question', text);
+            if(csrfToken) {
+                formData.append('csrfmiddlewaretoken', csrfToken);
+            }
+            
+            const response = await fetch('{% url "chatbot_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
+                },
+                body: formData.toString()
+            });
+            
+            const rawText = await response.text();
+            let data = {};
+            try {
+                data = rawText ? JSON.parse(rawText) : {};
+            } catch (parseErr) {
+                data = { error: rawText || 'Invalid API response format.' };
+            }
+            
+            typingIndicator.style.display = 'none';
+            if (data.answer) {
+                addMessage(data.answer, 'bot');
+            } else {
+                const fallbackMsg = data.error || data.message || data.detail || `Chatbot request failed (HTTP ${response.status}).`;
+                addMessage(fallbackMsg, 'bot');
+            }
+            
+        } catch (error) {
+            typingIndicator.style.display = 'none';
+            addMessage('Error communicating with the chatbot API.', 'bot');
+            console.error(error);
+        }
+    }
+
+    // Poll latest classification metrics and update the widget panel
+    async function fetchLatestMetrics() {
+        try {
+            const resp = await fetch('{% url "latest_classification_metrics" %}');
+            const json = await resp.json();
+            if (json && json.ok) {
+                document.getElementById('m_accuracy').textContent = json.accuracy || '—';
+                document.getElementById('m_precision').textContent = json.precision || '—';
+                document.getElementById('m_recall').textContent = json.recall || '—';
+                document.getElementById('m_f1').textContent = json.f1_score || '—';
+            }
+        } catch (e) {
+            // Silent fail — keep previous metrics
+            console.debug('Metrics poll failed', e);
+        }
+    }
+
+    // Initial fetch and periodic polling every 10 seconds
+    fetchLatestMetrics();
+    setInterval(fetchLatestMetrics, 10000);
+</script>

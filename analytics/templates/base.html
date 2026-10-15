@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Intelligent Supply Chain & Inventory Optimizer{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --danger-color: #dc3545;
+            --success-color: #198754;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+        .badge {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .table thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table thead th {
+            font-weight: 600;
+            color: #333;
+            padding: 1rem;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+        }
+
+        .form-control, .form-select {
+            border-radius: 0.375rem;
+            border: 1px solid #dee2e6;
+            padding: 0.625rem 0.875rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .spinner-border {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .display-4 {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .text-muted {
+            color: #6c757d;
+        }
+
+        .progress {
+            height: 25px;
+            background-color: #e9ecef;
+            border-radius: 0.375rem;
+        }
+
+        .progress-bar {
+            background-color: var(--primary-color);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Utility Classes */
+        .page-header {
+            padding: 2rem 0;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 2rem;
+        }
+
+        .shadow-sm {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+        }
+
+        .shadow-lg {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+        }
+
+        @media (max-width: 768px) {
+            .display-4 {
+                font-size: 2rem;
+            }
+            
+            .table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-boxes"></i> Supply Chain AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'realtime_data' %}">
+                            <i class="fas fa-truck"></i> Real-Time Data
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <p class="mb-0">
+                &copy; 2026 <strong>Intelligent Supply Chain & Inventory Optimizer</strong> | 
+                Powered by AI & Machine Learning
+            </p>
+            <small class="text-muted">Real-time data warehouse for supply chain optimization</small>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
